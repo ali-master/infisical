@@ -5,6 +5,7 @@ import {
 } from "@app/components/utilities/cryptography/crypto";
 import { Button } from "@app/components/v2";
 import { ProjectPermissionActions, ProjectPermissionSub, useWorkspace } from "@app/context";
+import { read } from "@app/helpers/storage";
 import {
   useGetUserWsKey,
   useGetWorkspaceIndexStatus,
@@ -33,7 +34,7 @@ export const ProjectIndexSecretsSection = () => {
       ciphertext: latestFileKey.encryptedKey,
       nonce: latestFileKey.nonce,
       publicKey: latestFileKey.sender.publicKey,
-      privateKey: localStorage.getItem("PRIVATE_KEY") as string
+      privateKey: read<string>("PRIVATE_KEY")!
     });
 
     const secretsToUpdate = encryptedSecrets.map((encryptedSecret) => {
@@ -57,9 +58,9 @@ export const ProjectIndexSecretsSection = () => {
   };
 
   return !isBlindIndexedLoading && !isBlindIndexed ? (
-    <div className="mb-6 p-4 bg-mineshaft-900 rounded-lg border border-mineshaft-600">
+    <div className="mb-6 rounded-lg border border-mineshaft-600 bg-mineshaft-900 p-4">
       <p className="mb-3 text-xl font-semibold">Blind Indices</p>
-      <p className="text-gray-400 mb-8">
+      <p className="mb-8 text-gray-400">
         Your project, created before the introduction of blind indexing, contains unindexed secrets.
         To access individual secrets by name through the SDK and public API, please enable blind
         indexing.

@@ -50,6 +50,7 @@ import {
   useUser,
   useWorkspace
 } from "@app/context";
+import { read } from "@app/helpers/storage";
 import { usePopUp, useToggle } from "@app/hooks";
 import {
   useAddUserToOrg,
@@ -256,10 +257,10 @@ export const OrgMembersTable = ({ roles = [], isRolesLoading }: Props) => {
 
   const onGrantAccess = async (grantedUserId: string, publicKey: string) => {
     try {
-      const PRIVATE_KEY = localStorage.getItem("PRIVATE_KEY") as string;
+      const PRIVATE_KEY = read<string>("PRIVATE_KEY")!;
       if (!PRIVATE_KEY || !wsKey) return;
 
-      // assymmetrically decrypt symmetric key with local private key
+      // asymmetrically decrypt symmetric key with a local private key
       const key = decryptAssymmetric({
         ciphertext: wsKey.encryptedKey,
         nonce: wsKey.nonce,

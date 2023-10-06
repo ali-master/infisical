@@ -1,8 +1,13 @@
-import { createContext, ReactNode, useContext, useMemo } from "react";
+// Utilities
+// Types
+import type { ReactNode } from "react";
+import { createContext , useContext, useMemo } from "react";
+// Hooks
 import { useRouter } from "next/router";
 
+import { read } from "@app/helpers/storage";
 import { useGetUserWorkspaces } from "@app/hooks/api";
-import { Workspace } from "@app/hooks/api/workspace/types";
+import type { Workspace } from "@app/hooks/api/workspace/types";
 
 type TWorkspaceContext = {
   workspaces: Workspace[];
@@ -23,10 +28,13 @@ export const WorkspaceProvider = ({ children }: Props): JSX.Element => {
 
   // memorize the workspace details for the context
   const value = useMemo<TWorkspaceContext>(() => {
-    const wsId = workspaceId || localStorage.getItem("projectData.id");
+    const workspaces = ws || [];
+    const wsId = workspaceId || read("projectData.id");
+    const currentWorkspace = workspaces.find(({ _id: id }) => id === wsId);
+
     return {
-      workspaces: ws || [],
-      currentWorkspace: (ws || []).find(({ _id: id }) => id === wsId),
+      workspaces,
+      currentWorkspace,
       isLoading
     };
   }, [ws, workspaceId, isLoading]);

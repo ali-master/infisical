@@ -15,6 +15,7 @@ import { deriveArgonKey } from "@app/components/utilities/cryptography/crypto";
 import { saveTokenToLocalStorage } from "@app/components/utilities/saveTokenToLocalStorage";
 import SecurityClient from "@app/components/utilities/SecurityClient";
 import { Button, Input } from "@app/components/v2";
+import { write } from "@app/helpers/storage";
 import { completeAccountSignup } from "@app/hooks/api/auth/queries";
 import { fetchOrganizations } from "@app/hooks/api/organization/queries";
 import ProjectService from "@app/services/ProjectService";
@@ -44,7 +45,7 @@ type Errors = {
 };
 
 /**
- * This is the step of the sign up flow where people provife their name/surname and password
+ * This is the step of the sign-up flow where people provide their name/surname and password
  * @param {object} obj
  * @param {string} obj.verificationToken - the token which we use to verify the legitness of a user
  * @param {string} obj.incrementStep - a function to move to the next signup step
@@ -109,7 +110,7 @@ export const UserInfoSSOStep = ({
       const publicKeyUint8Array = pair.publicKey;
       const privateKey = encodeBase64(secretKeyUint8Array);
       const publicKey = encodeBase64(publicKeyUint8Array);
-      localStorage.setItem("PRIVATE_KEY", privateKey);
+      write("PRIVATE_KEY", privateKey);
 
       client.init(
         {
@@ -193,8 +194,8 @@ export const UserInfoSSOStep = ({
                 projectName: "Example Project"
               });
 
-              localStorage.setItem("orgData.id", orgId);
-              localStorage.setItem("projectData.id", project._id);
+              write("orgData.id", orgId);
+              write("projectData.id", project._id);
 
               setStep(1);
             } catch (error) {

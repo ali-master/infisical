@@ -1,6 +1,7 @@
 import crypto from "crypto";
 
-import { TCloudIntegration,UserWsKeyPair } from "@app/hooks/api/types";
+import { read, write } from "@app/helpers/storage";
+import { TCloudIntegration, UserWsKeyPair } from "@app/hooks/api/types";
 
 import {
   decryptAssymmetric,
@@ -8,7 +9,7 @@ import {
 } from "../../components/utilities/cryptography/crypto";
 
 export const generateBotKey = (botPublicKey: string, latestKey: UserWsKeyPair) => {
-  const PRIVATE_KEY = localStorage.getItem("PRIVATE_KEY");
+  const PRIVATE_KEY = read<string>("PRIVATE_KEY")!;
 
   if (!PRIVATE_KEY) {
     throw new Error("Private Key missing");
@@ -32,96 +33,98 @@ export const generateBotKey = (botPublicKey: string, latestKey: UserWsKeyPair) =
 
 export const redirectForProviderAuth = (integrationOption: TCloudIntegration) => {
   try {
-
     // generate CSRF token for OAuth2 code-token exchange integrations
     const state = crypto.randomBytes(16).toString("hex");
-    localStorage.setItem("latestCSRFToken", state);
-    
+    write("latestCSRFToken", state);
+
+    const locationOrigin = window.location.origin;
+    const { clientId, clientSlug, slug } = integrationOption;
+
     let link = "";
-    switch (integrationOption.slug) {
+    switch (slug) {
       case "gcp-secret-manager":
-        link = `${window.location.origin}/integrations/gcp-secret-manager/authorize`;
+        link = `${locationOrigin}/integrations/gcp-secret-manager/authorize`;
         break;
       case "azure-key-vault":
-        link = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${integrationOption.clientId}&response_type=code&redirect_uri=${window.location.origin}/integrations/azure-key-vault/oauth2/callback&response_mode=query&scope=https://vault.azure.net/.default openid offline_access&state=${state}`;
+        link = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${clientId}&response_type=code&redirect_uri=${locationOrigin}/integrations/azure-key-vault/oauth2/callback&response_mode=query&scope=https://vault.azure.net/.default openid offline_access&state=${state}`;
         break;
       case "aws-parameter-store":
-        link = `${window.location.origin}/integrations/aws-parameter-store/authorize`;
+        link = `${locationOrigin}/integrations/aws-parameter-store/authorize`;
         break;
       case "aws-secret-manager":
-        link = `${window.location.origin}/integrations/aws-secret-manager/authorize`;
+        link = `${locationOrigin}/integrations/aws-secret-manager/authorize`;
         break;
       case "heroku":
-        link = `https://id.heroku.com/oauth/authorize?client_id=${integrationOption.clientId}&response_type=code&scope=write-protected&state=${state}`;
+        link = `https://id.heroku.com/oauth/authorize?client_id=${clientId}&response_type=code&scope=write-protected&state=${state}`;
         break;
       case "vercel":
-        link = `https://vercel.com/integrations/${integrationOption.clientSlug}/new?state=${state}`;
+        link = `https://vercel.com/integrations/${clientSlug}/new?state=${state}`;
         break;
       case "netlify":
-        link = `https://app.netlify.com/authorize?client_id=${integrationOption.clientId}&response_type=code&state=${state}&redirect_uri=${window.location.origin}/integrations/netlify/oauth2/callback`;
+        link = `https://app.netlify.com/authorize?client_id=${clientId}&response_type=code&state=${state}&redirect_uri=${locationOrigin}/integrations/netlify/oauth2/callback`;
         break;
       case "github":
-        link = `https://github.com/login/oauth/authorize?client_id=${integrationOption.clientId}&response_type=code&scope=repo&redirect_uri=${window.location.origin}/integrations/github/oauth2/callback&state=${state}`;
+        link = `https://github.com/login/oauth/authorize?client_id=${clientId}&response_type=code&scope=repo&redirect_uri=${locationOrigin}/integrations/github/oauth2/callback&state=${state}`;
         break;
       case "gitlab":
-        link = `${window.location.origin}/integrations/gitlab/authorize`;
+        link = `${locationOrigin}/integrations/gitlab/authorize`;
         break;
       case "render":
-        link = `${window.location.origin}/integrations/render/authorize`;
+        link = `${locationOrigin}/integrations/render/authorize`;
         break;
       case "flyio":
-        link = `${window.location.origin}/integrations/flyio/authorize`;
+        link = `${locationOrigin}/integrations/flyio/authorize`;
         break;
       case "circleci":
-        link = `${window.location.origin}/integrations/circleci/authorize`;
+        link = `${locationOrigin}/integrations/circleci/authorize`;
         break;
       case "laravel-forge":
-        link = `${window.location.origin}/integrations/laravel-forge/authorize`;
+        link = `${locationOrigin}/integrations/laravel-forge/authorize`;
         break;
       case "travisci":
-        link = `${window.location.origin}/integrations/travisci/authorize`;
+        link = `${locationOrigin}/integrations/travisci/authorize`;
         break;
       case "supabase":
-        link = `${window.location.origin}/integrations/supabase/authorize`;
+        link = `${locationOrigin}/integrations/supabase/authorize`;
         break;
       case "checkly":
-        link = `${window.location.origin}/integrations/checkly/authorize`;
+        link = `${locationOrigin}/integrations/checkly/authorize`;
         break;
       case "qovery":
-        link = `${window.location.origin}/integrations/qovery/authorize`;
+        link = `${locationOrigin}/integrations/qovery/authorize`;
         break;
       case "railway":
-        link = `${window.location.origin}/integrations/railway/authorize`;
+        link = `${locationOrigin}/integrations/railway/authorize`;
         break;
       case "terraform-cloud":
-        link = `${window.location.origin}/integrations/terraform-cloud/authorize`;
+        link = `${locationOrigin}/integrations/terraform-cloud/authorize`;
         break;
       case "hashicorp-vault":
-        link = `${window.location.origin}/integrations/hashicorp-vault/authorize`;
+        link = `${locationOrigin}/integrations/hashicorp-vault/authorize`;
         break;
       case "cloudflare-pages":
-        link = `${window.location.origin}/integrations/cloudflare-pages/authorize`;
+        link = `${locationOrigin}/integrations/cloudflare-pages/authorize`;
         break;
       case "bitbucket":
-        link = `https://bitbucket.org/site/oauth2/authorize?client_id=${integrationOption.clientId}&response_type=code&redirect_uri=${window.location.origin}/integrations/bitbucket/oauth2/callback&state=${state}`;
+        link = `https://bitbucket.org/site/oauth2/authorize?client_id=${clientId}&response_type=code&redirect_uri=${locationOrigin}/integrations/bitbucket/oauth2/callback&state=${state}`;
         break;
       case "codefresh":
-        link = `${window.location.origin}/integrations/codefresh/authorize`;
+        link = `${locationOrigin}/integrations/codefresh/authorize`;
         break;
       case "digital-ocean-app-platform":
-        link = `${window.location.origin}/integrations/digital-ocean-app-platform/authorize`;
+        link = `${locationOrigin}/integrations/digital-ocean-app-platform/authorize`;
         break;
       case "cloud-66":
-        link = `${window.location.origin}/integrations/cloud-66/authorize`;
+        link = `${locationOrigin}/integrations/cloud-66/authorize`;
         break;
       case "northflank":
-        link = `${window.location.origin}/integrations/northflank/authorize`;
+        link = `${locationOrigin}/integrations/northflank/authorize`;
         break;
       case "windmill":
-        link = `${window.location.origin}/integrations/windmill/authorize`;
+        link = `${locationOrigin}/integrations/windmill/authorize`;
         break;
       case "teamcity":
-        link = `${window.location.origin}/integrations/teamcity/authorize`;
+        link = `${locationOrigin}/integrations/teamcity/authorize`;
         break;
       default:
         break;
@@ -130,7 +133,6 @@ export const redirectForProviderAuth = (integrationOption: TCloudIntegration) =>
     if (link !== "") {
       window.location.assign(link);
     }
-    
   } catch (err) {
     console.error(err);
   }

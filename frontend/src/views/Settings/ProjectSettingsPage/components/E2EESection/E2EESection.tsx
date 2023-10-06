@@ -5,6 +5,7 @@ import {
 } from "@app/components/utilities/cryptography/crypto";
 import { Checkbox } from "@app/components/v2";
 import { ProjectPermissionActions, ProjectPermissionSub, useWorkspace } from "@app/context";
+import { read } from "@app/helpers/storage";
 import { useGetUserWsKey, useGetWorkspaceBot, useUpdateBotActiveStatus } from "@app/hooks/api";
 
 export const E2EESection = () => {
@@ -31,7 +32,7 @@ export const E2EESection = () => {
         if (!bot.isActive) {
           // bot is not active -> activate bot
 
-          const PRIVATE_KEY = localStorage.getItem("PRIVATE_KEY");
+          const PRIVATE_KEY = read<string>("PRIVATE_KEY");
 
           if (!PRIVATE_KEY) {
             throw new Error("Private Key missing");
@@ -76,14 +77,14 @@ export const E2EESection = () => {
   };
 
   return bot ? (
-    <div className="mb-6 p-4 bg-mineshaft-900 rounded-lg border border-mineshaft-600">
+    <div className="mb-6 rounded-lg border border-mineshaft-600 bg-mineshaft-900 p-4">
       <p className="mb-3 text-xl font-semibold">End-to-End Encryption</p>
-      <p className="text-gray-400 mb-8">
+      <p className="mb-8 text-gray-400">
         Disabling, end-to-end encryption (E2EE) unlocks capabilities like native integrations to
         cloud providers as well as HTTP calls to get secrets back raw but enables the server to
         read/decrypt your secret values.
       </p>
-      <p className="text-gray-400 mb-8">
+      <p className="mb-8 text-gray-400">
         Note that, even with E2EE disabled, your secrets are always encrypted at rest.
       </p>
       <ProjectPermissionCan I={ProjectPermissionActions.Edit} a={ProjectPermissionSub.Settings}>

@@ -26,6 +26,7 @@ import {
   SelectItem
 } from "@app/components/v2";
 import { useWorkspace } from "@app/context";
+import { read } from "@app/helpers/storage";
 import { useToggle } from "@app/hooks";
 import { useCreateServiceToken, useGetUserWsKey } from "@app/hooks/api";
 import { UsePopUpState } from "@app/hooks/usePopUp";
@@ -88,10 +89,12 @@ export const AddServiceTokenModal = ({ popUp, handlePopUpToggle }: Props) => {
   } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: {
-      scopes: [{ 
-        secretPath: "/", 
-        environment: currentWorkspace?.environments?.[0]?.slug 
-      }]
+      scopes: [
+        {
+          secretPath: "/",
+          environment: currentWorkspace?.environments?.[0]?.slug
+        }
+      ]
     }
   });
 
@@ -120,14 +123,13 @@ export const AddServiceTokenModal = ({ popUp, handlePopUpToggle }: Props) => {
 
   const onFormSubmit = async ({ name, scopes, expiresIn, permissions }: FormData) => {
     try {
-      if (!currentWorkspace?._id) return;
-      if (!latestFileKey) return;
+      if (!currentWorkspace?._id || !latestFileKey) return;
 
       const key = decryptAssymmetric({
         ciphertext: latestFileKey.encryptedKey,
         nonce: latestFileKey.nonce,
         publicKey: latestFileKey.sender.publicKey,
-        privateKey: localStorage.getItem("PRIVATE_KEY") as string
+        privateKey: read<string>("PRIVATE_KEY")!
       });
 
       const randomBytes = crypto.randomBytes(16).toString("hex");
@@ -136,7 +138,11 @@ export const AddServiceTokenModal = ({ popUp, handlePopUpToggle }: Props) => {
         plaintext: key,
         key: randomBytes
       });
-      
+
+      const $permissions = Object.entries(permissions)
+        .filter(([, permissionsValue]) => permissionsValue)
+        .map(([permissionsKey]) => permissionsKey);
+
       const { serviceToken } = await createServiceToken.mutateAsync({
         encryptedKey: ciphertext,
         iv,
@@ -146,9 +152,7 @@ export const AddServiceTokenModal = ({ popUp, handlePopUpToggle }: Props) => {
         name,
         workspaceId: currentWorkspace._id,
         randomBytes,
-        permissions: Object.entries(permissions)
-          .filter(([, permissionsValue]) => permissionsValue)
-          .map(([permissionsKey]) => permissionsKey)
+        permissions: $permissions
       });
 
       setToken(serviceToken);

@@ -1,4 +1,6 @@
-interface Props {
+import { remove, write } from "@app/helpers/storage";
+
+type Props = {
   protectedKey?: string;
   protectedKeyIV?: string;
   protectedKeyTag?: string;
@@ -7,7 +9,7 @@ interface Props {
   iv?: string;
   tag?: string;
   privateKey?: string;
-}
+};
 
 export const saveTokenToLocalStorage = ({
   protectedKey,
@@ -17,54 +19,51 @@ export const saveTokenToLocalStorage = ({
   encryptedPrivateKey,
   iv,
   tag,
-  privateKey,
+  privateKey
 }: Props) => {
   try {
-    
     if (protectedKey) {
-      localStorage.removeItem("protectedKey");
-      localStorage.setItem("protectedKey", protectedKey);
+      remove("protectedKey");
+      write("protectedKey", protectedKey);
     }
 
     if (protectedKeyIV) {
-      localStorage.removeItem("protectedKeyIV");
-      localStorage.setItem("protectedKeyIV", protectedKeyIV);
+      remove("protectedKeyIV");
+      write("protectedKeyIV", protectedKeyIV);
     }
 
     if (protectedKeyTag) {
-      localStorage.removeItem("protectedKeyTag");
-      localStorage.setItem("protectedKeyTag", protectedKeyTag);
+      remove("protectedKeyTag");
+      write("protectedKeyTag", protectedKeyTag);
     }
 
     if (publicKey) {
-      localStorage.removeItem("publicKey");
-      localStorage.setItem("publicKey", publicKey);
+      remove("publicKey");
+      write("publicKey", publicKey);
     }
 
     if (encryptedPrivateKey) {
-      localStorage.removeItem("encryptedPrivateKey");
-      localStorage.setItem("encryptedPrivateKey", encryptedPrivateKey);
+      remove("encryptedPrivateKey");
+      write("encryptedPrivateKey", encryptedPrivateKey);
     }
 
     if (iv) {
-      localStorage.removeItem("iv");
-      localStorage.setItem("iv", iv);
+      remove("iv");
+      write("iv", iv);
     }
 
     if (tag) {
-      localStorage.removeItem("tag");
-      localStorage.setItem("tag", tag);
+      remove("tag");
+      write("tag", tag);
     }
 
     if (privateKey) {
-      localStorage.removeItem("PRIVATE_KEY");
-      localStorage.setItem("PRIVATE_KEY", privateKey);
+      remove("PRIVATE_KEY");
+      write("PRIVATE_KEY", privateKey);
     }
   } catch (err) {
     if (err instanceof Error) {
-      throw new Error(
-        `Unable to send the tokens in local storage:${  err.message}`
-      );
+      throw new Error(`Unable to send the tokens in local storage:${err.message}`);
     }
   }
 };

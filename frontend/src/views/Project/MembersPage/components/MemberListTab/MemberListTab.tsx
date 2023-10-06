@@ -41,6 +41,7 @@ import {
   useUser,
   useWorkspace
 } from "@app/context";
+import { read } from "@app/helpers/storage";
 import { usePopUp } from "@app/hooks";
 import {
   useAddUserToWs,
@@ -173,7 +174,7 @@ export const MemberListTab = ({ roles = [], isRolesLoading }: Props) => {
     }
   };
 
-  const filterdUsers = useMemo(
+  const filteredUsers = useMemo(
     () =>
       members?.filter(
         ({ user: u, inviteEmail }) =>
@@ -197,10 +198,10 @@ export const MemberListTab = ({ roles = [], isRolesLoading }: Props) => {
 
   const onGrantAccess = async (grantedUserId: string, publicKey: string) => {
     try {
-      const PRIVATE_KEY = localStorage.getItem("PRIVATE_KEY") as string;
+      const PRIVATE_KEY = read<string>("PRIVATE_KEY")!;
       if (!PRIVATE_KEY || !wsKey) return;
 
-      // assymmetrically decrypt symmetric key with local private key
+      // asymmetrically decrypt symmetric key with a local private key
       const key = decryptAssymmetric({
         ciphertext: wsKey.encryptedKey,
         nonce: wsKey.nonce,
@@ -268,7 +269,7 @@ export const MemberListTab = ({ roles = [], isRolesLoading }: Props) => {
             <TBody>
               {isLoading && <TableSkeleton columns={4} innerKey="project-members" />}
               {!isLoading &&
-                filterdUsers?.map(
+                filteredUsers?.map(
                   ({ user: u, inviteEmail, _id: membershipId, status, customRole, role }) => {
                     const name = u ? `${u.firstName} ${u.lastName}` : "-";
                     const email = u?.email || inviteEmail;
@@ -347,7 +348,7 @@ export const MemberListTab = ({ roles = [], isRolesLoading }: Props) => {
                 )}
             </TBody>
           </Table>
-          {!isLoading && filterdUsers?.length === 0 && (
+          {!isLoading && filteredUsers?.length === 0 && (
             <EmptyState title="No project members found" icon={faUsers} />
           )}
         </TableContainer>
